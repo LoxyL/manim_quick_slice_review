@@ -1,0 +1,65 @@
+{
+  "name": "manim-quick-slice-review",
+  "displayName": "Manim Quick Slice Review",
+  "description": "Quickly preview a specific slice of your Manim animation in VS Code.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.84.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "manim-quick-slice-review.previewSlice",
+        "title": "Preview Manim Slice"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "manim-quick-slice-review.previewSlice",
+        "key": "ctrl+shift+1",
+        "mac": "cmd+shift+1",
+        "when": "editorTextFocus && editorLangId == 'python'"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "manim-slice-review",
+          "title": "Manim Review",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "manim-slice-review": [
+        {
+          "id": "manimSliceReviewView",
+          "name": "Preview",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.84.0",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+} 

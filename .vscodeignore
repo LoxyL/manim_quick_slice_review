@@ -1,0 +1,9 @@
+.vscode-test/
+.vscode-test-compile/
+.vscode-test-e2e/
+.vscode-test-insiders/
+node_modules/
+src/
+.vscode/
+*.vsix
+.DS_Store 
