@@ -45,6 +45,16 @@
           "type": "webview"
         }
       ]
+    },
+    "configuration": {
+      "title": "Manim Quick Slice Review",
+      "properties": {
+        "manim-quick-slice-review.condaEnvName": {
+          "type": "string",
+          "default": "manim_animation",
+          "description": "The name of the Conda environment to use for rendering. The 'manim' and 'python' commands must be available in this environment."
+        }
+      }
     }
   },
   "scripts": {

@@ -1,52 +1,84 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-export class SlicePreviewProvider implements vscode.WebviewViewProvider {
+export class SlicePreviewPanel {
+    public static currentPanel: SlicePreviewPanel | undefined;
+    public static readonly viewType = 'manimSlicePreview';
 
-    public static readonly viewType = 'manimSliceReviewView';
+    private readonly _panel: vscode.WebviewPanel;
+    private readonly _extensionUri: vscode.Uri;
+    private _disposables: vscode.Disposable[] = [];
 
-    private _view?: vscode.WebviewView;
+    public static createOrShow(extensionUri: vscode.Uri) {
+        const column = vscode.window.activeTextEditor
+            ? vscode.window.activeTextEditor.viewColumn
+            : undefined;
 
-    constructor(
-        private readonly _extensionUri: vscode.Uri,
-    ) { }
+        if (SlicePreviewPanel.currentPanel) {
+            SlicePreviewPanel.currentPanel._panel.reveal(column);
+            return;
+        }
 
-    public resolveWebviewView(
-        webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
-        _token: vscode.CancellationToken,
-    ) {
-        this._view = webviewView;
+        const panel = vscode.window.createWebviewPanel(
+            SlicePreviewPanel.viewType,
+            'Manim Slice Preview',
+            column || vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                localResourceRoots: [
+                    extensionUri,
+                    vscode.Uri.file('/')
+                ]
+            }
+        );
 
-        webviewView.webview.options = {
-            enableScripts: true,
-            localResourceRoots: [
-                this._extensionUri,
-                vscode.Uri.file('/')
-            ]
-        };
+        SlicePreviewPanel.currentPanel = new SlicePreviewPanel(panel, extensionUri);
+    }
 
-        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+        this._panel = panel;
+        this._extensionUri = extensionUri;
+
+        this._update();
+
+        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    }
+
+    public dispose() {
+        SlicePreviewPanel.currentPanel = undefined;
+
+        this._panel.dispose();
+
+        while (this._disposables.length) {
+            const x = this._disposables.pop();
+            if (x) {
+                x.dispose();
+            }
+        }
     }
 
     public updatePreview(videoUri: vscode.Uri) {
-        if (this._view) {
-            const webviewVideoUri = this._view.webview.asWebviewUri(videoUri);
-            this._view.webview.postMessage({ type: 'updateVideo', uri: webviewVideoUri.toString() });
-            this._view.webview.postMessage({ type: 'clearLog' });
+        if (this._panel) {
+            const webviewVideoUri = this._panel.webview.asWebviewUri(videoUri);
+            this._panel.webview.postMessage({ type: 'updateVideo', uri: webviewVideoUri.toString() });
+            this._panel.webview.postMessage({ type: 'clearLog' });
         }
     }
 
     public updateLog(logMessage: string) {
-        if (this._view) {
-            this._view.webview.postMessage({ type: 'addLog', message: logMessage });
+        if (this._panel) {
+            this._panel.webview.postMessage({ type: 'addLog', message: logMessage });
         }
     }
 
     public showLoading() {
-        if (this._view) {
-            this._view.webview.postMessage({ type: 'showLoading' });
+        if (this._panel) {
+            this._panel.webview.postMessage({ type: 'showLoading' });
         }
+    }
+    
+    private _update() {
+        this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
     }
 
 
